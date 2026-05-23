@@ -1,0 +1,1027 @@
+/*
+  FocusFlow — style.css
+  ======================
+  Aesthetic: "Warm Dark Productivity"
+  A refined dark-first design with warm amber accents,
+  clean geometry, and calm typographic hierarchy.
+
+  TABLE OF CONTENTS:
+  1.  CSS Variables (Design Tokens)
+  2.  Reset & Base
+  3.  Background Blobs
+  4.  App Layout
+  5.  Header
+  6.  Timer Section
+  7.  SVG Progress Ring
+  8.  Timer Digits
+  9.  Control Buttons
+  10. Mode Switcher
+  11. Quote Card
+  12. To-Do Section
+  13. Task Items
+  14. Stats Strip
+  15. Footer
+  16. Toast Notification
+  17. Dark / Light Themes
+  18. Animations & Keyframes
+  19. Responsive (Mobile)
+*/
+
+/* ─────────────────────────────────────────────────────────────────
+   1. CSS VARIABLES — Change colors here to retheme the whole app!
+   ─────────────────────────────────────────────────────────────────
+   We use [data-theme="dark"] and [data-theme="light"] on <html>.
+   JS toggles the attribute. */
+
+:root {
+  /* Typography */
+  --font-display: 'Syne', sans-serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Ring geometry — must match SVG r="95" and circumference = 2π×95 ≈ 597 */
+  --ring-circumference: 597;
+}
+
+/* ─── DARK THEME (default) ─── */
+[data-theme="dark"] {
+  --bg-base:        #0f0f13;
+  --bg-surface:     #18181f;
+  --bg-elevated:    #22222c;
+  --bg-glass:       rgba(255,255,255,0.04);
+  --bg-glass-hover: rgba(255,255,255,0.07);
+
+  --text-primary:   #f0ede8;
+  --text-secondary: #9896a0;
+  --text-muted:     #5c5a65;
+
+  --accent-primary: #f5a623;   /* warm amber */
+  --accent-glow:    rgba(245, 166, 35, 0.25);
+  --accent-break:   #4ecdc4;   /* teal for break mode */
+  --accent-break-glow: rgba(78, 205, 196, 0.25);
+
+  --border-subtle:  rgba(255,255,255,0.08);
+  --border-accent:  rgba(245,166,35,0.4);
+
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.4);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.5);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.6);
+
+  --ring-track-color: #2a2a36;
+  --ring-progress-color: var(--accent-primary);
+
+  --blob-1: rgba(245,166,35,0.06);
+  --blob-2: rgba(78,205,196,0.04);
+  --blob-3: rgba(160,100,220,0.03);
+}
+
+/* ─── LIGHT THEME ─── */
+[data-theme="light"] {
+  --bg-base:        #f5f3ef;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #faf9f7;
+  --bg-glass:       rgba(0,0,0,0.03);
+  --bg-glass-hover: rgba(0,0,0,0.06);
+
+  --text-primary:   #1a1a24;
+  --text-secondary: #5c5a70;
+  --text-muted:     #a09eac;
+
+  --accent-primary: #d4880d;
+  --accent-glow:    rgba(212, 136, 13, 0.18);
+  --accent-break:   #0fa39a;
+  --accent-break-glow: rgba(15, 163, 154, 0.18);
+
+  --border-subtle:  rgba(0,0,0,0.08);
+  --border-accent:  rgba(212,136,13,0.4);
+
+  --shadow-sm:  0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md:  0 8px 32px rgba(0,0,0,0.12);
+  --shadow-lg:  0 20px 60px rgba(0,0,0,0.16);
+
+  --ring-track-color: #e8e5df;
+  --ring-progress-color: var(--accent-primary);
+
+  --blob-1: rgba(245,166,35,0.08);
+  --blob-2: rgba(78,205,196,0.06);
+  --blob-3: rgba(160,100,220,0.04);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   2. RESET & BASE
+   ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Smooth color/background transitions when switching theme */
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+  font-size: 15px;
+  transition: background-color var(--transition-slow), color var(--transition-slow);
+}
+
+ul { list-style: none; }
+button { cursor: pointer; border: none; outline: none; font-family: inherit; }
+input  { font-family: inherit; outline: none; border: none; }
+
+/* Focus ring for keyboard accessibility */
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Utility: hidden class */
+.hidden { display: none !important; }
+
+/* ─────────────────────────────────────────────────────────────────
+   3. BACKGROUND BLOBS
+   Soft glowing orbs that float behind everything — purely decorative.
+   ───────────────────────────────────────────────────────────────── */
+.bg-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;  /* won't block clicks */
+  z-index: 0;
+  animation: blobFloat 20s ease-in-out infinite alternate;
+}
+
+.blob-1 {
+  width: 500px; height: 500px;
+  top: -100px; left: -150px;
+  background: var(--blob-1);
+  animation-duration: 22s;
+}
+
+.blob-2 {
+  width: 400px; height: 400px;
+  bottom: -80px; right: -100px;
+  background: var(--blob-2);
+  animation-duration: 18s;
+  animation-delay: -6s;
+}
+
+.blob-3 {
+  width: 300px; height: 300px;
+  top: 40%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--blob-3);
+  animation-duration: 25s;
+  animation-delay: -12s;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   4. APP LAYOUT
+   ───────────────────────────────────────────────────────────────── */
+.app-wrapper {
+  position: relative;
+  z-index: 1;  /* sits above background blobs */
+  min-height: 100vh;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* Two-column layout on desktop */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   5. HEADER
+   ───────────────────────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) 0;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.logo-icon {
+  font-size: 1.6rem;
+  color: var(--accent-primary);
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all var(--transition-base);
+  backdrop-filter: blur(8px);
+}
+
+.theme-toggle:hover {
+  background: var(--bg-glass-hover);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-icon { font-size: 1rem; }
+
+/* ─────────────────────────────────────────────────────────────────
+   6. TIMER SECTION
+   ───────────────────────────────────────────────────────────────── */
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl) var(--space-lg);
+  box-shadow: var(--shadow-md);
+  transition: background var(--transition-slow), border-color var(--transition-slow);
+}
+
+/* Mode Badge */
+.mode-badge-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--accent-primary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all var(--transition-base);
+}
+
+/* The pulsing dot inside the badge */
+.mode-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  animation: dotPulse 1.5s ease-in-out infinite;
+  transition: background var(--transition-base);
+}
+
+/* Break mode changes badge colors */
+.mode-badge.break-mode {
+  background: var(--accent-break-glow);
+  border-color: var(--accent-break);
+  color: var(--accent-break);
+}
+.mode-badge.break-mode .mode-dot {
+  background: var(--accent-break);
+}
+
+.session-info {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   7. SVG PROGRESS RING
+   ───────────────────────────────────────────────────────────────── */
+.timer-ring-container {
+  position: relative;
+  width: 220px;
+  height: 220px;
+}
+
+/* The SVG itself rotates so the progress starts at the top */
+.timer-ring {
+  transform: rotate(-90deg);  /* 0° is at 3 o'clock; we want 12 o'clock */
+  filter: drop-shadow(0 0 16px var(--accent-glow));
+  transition: filter var(--transition-slow);
+}
+
+/* Background track ring (gray circle underneath) */
+.ring-track {
+  fill: none;
+  stroke: var(--ring-track-color);
+  stroke-width: 10;
+  transition: stroke var(--transition-slow);
+}
+
+/* Animated progress ring */
+.ring-progress {
+  fill: none;
+  stroke: var(--ring-progress-color);
+  stroke-width: 10;
+  stroke-linecap: round;
+  /* circumference ≈ 597 — the full length of our circle */
+  stroke-dasharray: 597;
+  /* Initially fully visible (offset = 0 means fully drawn) */
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 1s linear, stroke var(--transition-base);
+}
+
+/* Break mode ring color */
+.ring-progress.break-mode {
+  stroke: var(--accent-break);
+  filter: none;
+}
+
+.timer-ring.break-mode {
+  filter: drop-shadow(0 0 16px var(--accent-break-glow));
+}
+
+/* Timer digits float in the center of the ring */
+.timer-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   8. TIMER DIGITS
+   ───────────────────────────────────────────────────────────────── */
+.timer-digits {
+  font-family: var(--font-display);
+  font-size: 3.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  line-height: 1;
+  /* Tabular nums prevent the digits from shifting as they change */
+  font-variant-numeric: tabular-nums;
+  transition: color var(--transition-base);
+}
+
+.timer-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   9. CONTROL BUTTONS
+   ───────────────────────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Base button style */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ripple effect layer — animates on click via JS */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.08);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+.btn:active::after { transform: scaleX(1); }
+
+/* Start button */
+.btn-start {
+  background: var(--accent-primary);
+  color: #1a1008;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+.btn-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--accent-glow);
+  filter: brightness(1.1);
+}
+.btn-start:active { transform: translateY(0); }
+
+/* Pause button */
+.btn-pause {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+.btn-pause:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+}
+
+/* Reset button */
+.btn-reset {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+.btn-reset:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+  transform: translateY(-2px);
+}
+
+.btn-icon {
+  font-size: 0.85rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   10. MODE SWITCHER (Focus / Break toggle row)
+   ───────────────────────────────────────────────────────────────── */
+.mode-switcher {
+  display: flex;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  padding: 4px;
+  gap: 4px;
+  transition: background var(--transition-slow);
+}
+
+.mode-btn {
+  padding: 8px 20px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+  color: var(--text-secondary);
+  background: transparent;
+  transition: all var(--transition-base);
+}
+
+.mode-btn:hover {
+  color: var(--text-primary);
+}
+
+.mode-btn.active {
+  background: var(--accent-primary);
+  color: #1a1008;
+  box-shadow: 0 2px 10px var(--accent-glow);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   11. QUOTE CARD
+   ───────────────────────────────────────────────────────────────── */
+.quote-card {
+  width: 100%;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  text-align: center;
+  position: relative;
+  transition: all var(--transition-slow);
+}
+
+.quote-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.quote-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-style: italic;
+  margin-bottom: var(--space-xs);
+  transition: all var(--transition-base);
+}
+
+/* Fade-in animation class applied by JS on quote change */
+.quote-text.fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+.quote-author {
+  font-size: 0.75rem;
+  color: var(--accent-primary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* Small refresh button in top-right corner of quote card */
+.quote-refresh {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+}
+.quote-refresh:hover {
+  background: var(--bg-glass-hover);
+  color: var(--accent-primary);
+  transform: rotate(180deg);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   12. TO-DO SECTION
+   ───────────────────────────────────────────────────────────────── */
+.todo-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl) var(--space-lg);
+  box-shadow: var(--shadow-md);
+  transition: background var(--transition-slow), border-color var(--transition-slow);
+}
+
+.todo-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.todo-title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.todo-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Input + Add button row */
+.todo-input-wrapper {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.todo-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all var(--transition-base);
+}
+
+.todo-input::placeholder { color: var(--text-muted); }
+
+.todo-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* Add (+) button */
+.btn-add {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: var(--accent-primary);
+  color: #1a1008;
+  font-size: 1.4rem;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 14px var(--accent-glow);
+}
+.btn-add:hover {
+  transform: scale(1.08) rotate(5deg);
+  filter: brightness(1.1);
+}
+.btn-add:active { transform: scale(0.95) rotate(0deg); }
+
+/* Filter buttons (All / Active / Done) */
+.todo-filters {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-base);
+}
+.filter-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+.filter-btn.active {
+  background: var(--accent-primary);
+  color: #1a1008;
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* Task list container */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar styling */
+.task-list::-webkit-scrollbar { width: 4px; }
+.task-list::-webkit-scrollbar-track { background: transparent; }
+.task-list::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   13. TASK ITEMS
+   ───────────────────────────────────────────────────────────────── */
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-xl);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.empty-icon { font-size: 2rem; opacity: 0.5; }
+
+/* Individual task item */
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
+  animation: taskSlideIn 0.25s ease;
+}
+
+.task-item:hover {
+  border-color: var(--accent-primary);
+  background: var(--bg-glass-hover);
+  transform: translateX(4px);
+}
+
+/* Custom checkbox */
+.task-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  font-size: 0.65rem;
+  color: transparent;
+}
+
+.task-check:hover {
+  border-color: var(--accent-primary);
+  background: var(--accent-glow);
+}
+
+/* When task is done, the checkbox fills */
+.task-item.done .task-check {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #1a1008;
+}
+
+/* Task text */
+.task-text {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  transition: all var(--transition-base);
+  word-break: break-word;
+}
+
+/* Strikethrough when done */
+.task-item.done .task-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Delete button */
+.task-delete {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.task-item:hover .task-delete { opacity: 1; }
+.task-delete:hover {
+  background: rgba(255, 80, 80, 0.15);
+  color: #ff6b6b;
+}
+
+/* Clear done button */
+.btn-clear {
+  align-self: flex-start;
+  padding: 7px 16px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-base);
+}
+.btn-clear:hover {
+  color: #ff6b6b;
+  border-color: rgba(255,80,80,0.4);
+  background: rgba(255,80,80,0.06);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   14. STATS STRIP
+   ───────────────────────────────────────────────────────────────── */
+.stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: var(--space-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-top: auto; /* push to bottom of column */
+  transition: background var(--transition-slow);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  transition: color var(--transition-slow);
+}
+
+.stat-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--border-subtle);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   15. FOOTER
+   ───────────────────────────────────────────────────────────────── */
+.app-footer {
+  text-align: center;
+  padding: var(--space-sm) 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   16. TOAST NOTIFICATION
+   ───────────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-primary);
+  border-radius: var(--radius-full);
+  padding: 12px 28px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg), 0 0 20px var(--accent-glow);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  /* Combined: slide up and fade in */
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.4s ease;
+}
+
+/* JS adds this class to show the toast */
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   17. DARK / LIGHT THEME OVERRIDES
+   (Most theming is handled by CSS variables above; these are
+   any remaining element-specific overrides)
+   ───────────────────────────────────────────────────────────────── */
+
+/* Ring shadow changes per theme (already handled by var()) */
+
+/* ─────────────────────────────────────────────────────────────────
+   18. ANIMATIONS & KEYFRAMES
+   ───────────────────────────────────────────────────────────────── */
+
+/* Floating blob in background */
+@keyframes blobFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(30px, -20px) scale(1.05); }
+  100% { transform: translate(-20px, 30px) scale(0.97); }
+}
+
+/* Logo icon pulse */
+@keyframes logoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.7; transform: scale(0.95); }
+}
+
+/* Mode badge dot pulse */
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.6); opacity: 0.5; }
+}
+
+/* Quote fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Task slide-in when added */
+@keyframes taskSlideIn {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Timer finishing flash — applied briefly when timer ends */
+.timer-digits.flash {
+  animation: timerFlash 0.6s ease 3;
+}
+@keyframes timerFlash {
+  0%,100% { color: var(--text-primary); }
+  50%     { color: var(--accent-primary); }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   19. RESPONSIVE — MOBILE (< 768px)
+   ───────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-wrapper {
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+
+  /* Stack columns vertically on mobile */
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timer-section,
+  .todo-section {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .timer-digits { font-size: 2.6rem; }
+  .timer-ring-container { width: 190px; height: 190px; }
+  .timer-ring { width: 190px; height: 190px; }
+
+  /* Show theme label on mobile (hide on very small) */
+  @media (max-width: 380px) {
+    .theme-label { display: none; }
+  }
+}
+
+/* Tablet (768–1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .app-wrapper { max-width: 100%; padding: var(--space-lg); }
+  .main-grid { gap: var(--space-lg); }
+}

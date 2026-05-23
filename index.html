@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<!--
+  FocusFlow - Pomodoro Study Timer
+  ===================================
+  File: index.html
+  Purpose: The main HTML structure (skeleton) of the app.
+  All visible elements live here. CSS styles them, JS makes them work.
+-->
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Makes the page look good on phones -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusFlow — Study Timer</title>
+
+  <!-- Google Fonts: Syne (display/headings) + Plus Jakarta Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Our custom stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- =============================================
+       BACKGROUND DECORATIONS (purely visual blobs)
+       ============================================= -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <!-- =============================================
+       MAIN APP WRAPPER
+       ============================================= -->
+  <div class="app-wrapper">
+
+    <!-- ── HEADER ──────────────────────────────── -->
+    <header class="app-header">
+      <!-- App logo/name -->
+      <div class="logo">
+        <span class="logo-icon">◎</span>
+        <span class="logo-text">FocusFlow</span>
+      </div>
+
+      <!-- Dark / Light mode toggle button -->
+      <!-- aria-label helps screen readers understand the button -->
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <!-- The icon inside changes via JS -->
+        <span class="theme-icon" id="themeIcon">☀️</span>
+        <span class="theme-label" id="themeLabel">Light Mode</span>
+      </button>
+    </header>
+
+    <!-- ── MAIN CONTENT GRID ────────────────────── -->
+    <main class="main-grid">
+
+      <!-- ============ LEFT COLUMN: TIMER ============ -->
+      <section class="timer-section">
+
+        <!-- Mode badge: shows "Focus" or "Break" -->
+        <div class="mode-badge-wrapper">
+          <div class="mode-badge" id="modeBadge">
+            <span class="mode-dot"></span>
+            <span id="modeText">Focus Mode</span>
+          </div>
+        </div>
+
+        <!-- Session counter (e.g. Session 1 of 4) -->
+        <p class="session-info" id="sessionInfo">Session 1 of 4</p>
+
+        <!-- ── SVG PROGRESS RING ── -->
+        <!--
+          How the ring works:
+          - It's an SVG circle drawn on top of itself.
+          - stroke-dasharray sets the total length of the circle.
+          - stroke-dashoffset controls how much is "hidden" (acts like a progress fill).
+          - JS updates stroke-dashoffset every second to animate the ring.
+        -->
+        <div class="timer-ring-container">
+          <svg class="timer-ring" viewBox="0 0 220 220" width="220" height="220">
+            <!-- Background track (static grey ring) -->
+            <circle class="ring-track" cx="110" cy="110" r="95" />
+            <!-- Animated progress ring (colored) -->
+            <circle class="ring-progress" id="ringProgress" cx="110" cy="110" r="95" />
+          </svg>
+
+          <!-- Timer display sits centered on top of the SVG ring -->
+          <div class="timer-display">
+            <!-- Main countdown digits -->
+            <div class="timer-digits" id="timerDisplay">25:00</div>
+            <!-- Small sub-label -->
+            <div class="timer-sub" id="timerSub">until break</div>
+          </div>
+        </div>
+
+        <!-- ── CONTROL BUTTONS ── -->
+        <div class="controls">
+          <!-- Start button -->
+          <button class="btn btn-start" id="startBtn" aria-label="Start timer">
+            <span class="btn-icon">▶</span>
+            <span>Start</span>
+          </button>
+
+          <!-- Pause button (hidden at first) -->
+          <button class="btn btn-pause hidden" id="pauseBtn" aria-label="Pause timer">
+            <span class="btn-icon">⏸</span>
+            <span>Pause</span>
+          </button>
+
+          <!-- Reset button -->
+          <button class="btn btn-reset" id="resetBtn" aria-label="Reset timer">
+            <span class="btn-icon">↺</span>
+            <span>Reset</span>
+          </button>
+        </div>
+
+        <!-- ── SESSION MODE SWITCHER ── -->
+        <!-- User can manually switch between Focus / Break -->
+        <div class="mode-switcher">
+          <button class="mode-btn active" id="focusBtn" data-mode="focus">🎯 Focus</button>
+          <button class="mode-btn" id="breakBtn" data-mode="break">☕ Break</button>
+        </div>
+
+        <!-- ── MOTIVATIONAL QUOTE ── -->
+        <div class="quote-card" id="quoteCard">
+          <p class="quote-text" id="quoteText">
+            "The secret of getting ahead is getting started."
+          </p>
+          <span class="quote-author" id="quoteAuthor">— Mark Twain</span>
+          <!-- Button to get a new random quote -->
+          <button class="quote-refresh" id="refreshQuote" title="New quote">↻</button>
+        </div>
+
+      </section>
+
+      <!-- ============ RIGHT COLUMN: TO-DO LIST ============ -->
+      <section class="todo-section">
+
+        <div class="todo-header">
+          <h2 class="todo-title">Today's Tasks</h2>
+          <!-- Live counter shows how many tasks remain -->
+          <span class="todo-count" id="todoCount">0 tasks</span>
+        </div>
+
+        <!-- Task input area -->
+        <div class="todo-input-wrapper">
+          <input
+            type="text"
+            class="todo-input"
+            id="todoInput"
+            placeholder="Add a new task..."
+            maxlength="80"
+            autocomplete="off"
+          />
+          <!-- Add button triggers JS to create a task -->
+          <button class="btn-add" id="addTaskBtn" aria-label="Add task">+</button>
+        </div>
+
+        <!-- Filter buttons: All / Active / Done -->
+        <div class="todo-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="done">Done</button>
+        </div>
+
+        <!-- Task list — JS will add <li> items here -->
+        <ul class="task-list" id="taskList">
+          <!-- Empty state shown when no tasks exist -->
+          <li class="empty-state" id="emptyState">
+            <span class="empty-icon">📋</span>
+            <p>No tasks yet. Add one above!</p>
+          </li>
+        </ul>
+
+        <!-- Clear all completed tasks at once -->
+        <button class="btn-clear" id="clearDoneBtn">🗑 Clear Completed</button>
+
+        <!-- ── STATS STRIP ── -->
+        <div class="stats-strip">
+          <div class="stat-item">
+            <span class="stat-num" id="statPomodoros">0</span>
+            <span class="stat-label">Pomodoros</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num" id="statMinutes">0</span>
+            <span class="stat-label">Min Focused</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num" id="statTasks">0</span>
+            <span class="stat-label">Tasks Done</span>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer class="app-footer">
+      Built with ❤️ · FocusFlow v1.0
+    </footer>
+
+  </div><!-- end .app-wrapper -->
+
+  <!-- ============================================================
+       TOAST NOTIFICATION (pops up briefly at bottom of screen)
+       ============================================================ -->
+  <!-- JS will show/hide this by adding the class "show" -->
+  <div class="toast" id="toast">
+    <span id="toastMsg">Timer complete!</span>
+  </div>
+
+  <!-- Our JavaScript file — placed at the END of body so the
+       HTML loads before the JS tries to access any elements -->
+  <script src="script.js"></script>
+</body>
+</html>
